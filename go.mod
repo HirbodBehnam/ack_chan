@@ -1,4 +1,4 @@
-module ack-chan
+module github.com/HirbodBehnam/ack-chan
 
 go 1.22
 
