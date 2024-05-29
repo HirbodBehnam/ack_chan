@@ -5,10 +5,14 @@ import (
 	"io"
 )
 
+// AckableByteWriter is a wrapper around AckableChan[[]byte] which
+// implements the io.Writer interface. It is convenient for scenarios which
+// a data must be passed to another goroutine and processed which can fail.
 type AckableByteWriter struct {
 	AckableChan[[]byte]
 }
 
+// NewAckableByteWriter will create a new ackable channel which implements io.Writer interface
 func NewAckableByteWriter() *AckableByteWriter {
 	return &AckableByteWriter{*NewAckableChan[[]byte]()}
 }
@@ -23,6 +27,9 @@ func (c *AckableByteWriter) Write(data []byte) (n int, err error) {
 	// However, if the reader side closes the channel mid write, we will get a panic.
 	//
 	// In this case, we simply defer a recover here.
+	// This will decrease the performance, but I really don't know any better way
+	// except implementing a channel which closes when the AckableChan closes.
+	// With that, we can select between sending data and reading from closed channel.
 	defer func() {
 		if recover() != nil {
 			n = 0
